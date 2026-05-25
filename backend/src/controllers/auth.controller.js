@@ -1,5 +1,10 @@
 export const signup = (req,res) => {
-    res.send("signup router");
+    const{fullName,email,password} = req.body;
+    try{
+        //hash password
+    }catch(error){
+
+    }
 };
 
 export const login = (req,res) => {
