@@ -12,10 +12,13 @@ import { useEffect } from 'react'
 import { useAuthStore } from './store/useAuthStore'
 
 import { Loader } from 'lucide-react';
+import { useThemeStore } from './store/useThemeStore'
 
 const App = () => {
 
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+
+  const { theme } = useThemeStore();
 
   useEffect(() => {
     checkAuth();
@@ -30,7 +33,7 @@ const App = () => {
   )
 
   return (
-    <div data-theme="retro">
+    <div data-theme={theme}>
       <Navbar />
 
       <Routes>
