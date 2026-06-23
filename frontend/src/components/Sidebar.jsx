@@ -52,9 +52,9 @@ const Sidebar = () => {
                             )}
                         </div>
 
-                        {/* User info - only visible on larger screens */}
-                        <div className="hidden lg:block text-left min-w-0">
-                            <div className="font-medium truncate">{user.fullName}</div>
+                        {/* User info */}
+                        <div className="text-left min-w-0 flex flex-col">
+                            <div className="font-medium truncate">{user.fullName || user.username}</div>
                             <div className="text-sm text-zinc-400">
                                 {onlineUsers.includes(user._id) ? "Online" : "Offline"}
                             </div>
