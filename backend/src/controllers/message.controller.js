@@ -60,12 +60,16 @@ export const sendMessages = async (req, res) => {
 
         await newMessage.save();
 
-        //todo: realrime functionality goes here => socket.io
+        const receiverSocketId = getReceiverSocketId(receiverId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("newMessage", newMessage);
+        }
 
         res.status(201).json(newMessage);
 
     } catch (error) {
-        console.error("Error in sendMessage controller: ", error.message);
+        console.log("Error in sendMessage controller: ", error.message);
+        res.status(500).json({ error: "Internal server error" });
 
     }
 }
