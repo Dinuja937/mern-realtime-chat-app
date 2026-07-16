@@ -1,5 +1,8 @@
 import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
+import cloudinary from "../lib/cloudinary.js";
+
+import { getReceiverSocketId, io } from "../lib/socket.js";
 
 export const getUsersForSidebar = async (req, res) => {
 
@@ -46,9 +49,18 @@ export const sendMessages = async (req, res) => {
 
         let imageUrl;
         if (image) {
-            //Upload base64 image to cloudinary
-            const uploadResponse = await cloudinary.upload(image);
-            imageUrl = uploadResponse.secure_url;
+            try {
+                // Upload base64 image (data URI) to Cloudinary
+                const uploadResponse = await cloudinary.uploader.upload(image, {
+                    resource_type: "image",
+                    folder: "chat_images",
+                });
+                imageUrl = uploadResponse.secure_url;
+            } catch (uploadErr) {
+                console.error("Cloudinary upload failed:", uploadErr);
+                // Return a clear error to the client
+                return res.status(500).json({ error: "Image upload failed" });
+            }
         }
 
         const newMessage = new Message({
