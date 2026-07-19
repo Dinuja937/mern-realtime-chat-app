@@ -19,19 +19,31 @@ const ChatContainer = () => {
     const { authUser } = useAuthStore();
     const messageEndRef = useRef(null);
 
+    // Load messages when a user is selected
     useEffect(() => {
+        if (!selectedUser) return;
+        // Clear previous messages when switching user
+        useChatStore.setState({ messages: [] });
         getMessages(selectedUser._id);
-
         subscribeToMessages();
-
         return () => unsubscribeFromMessages();
-    }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
+    }, [selectedUser?._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
 
+    // Auto‑scroll to latest message
     useEffect(() => {
         if (messageEndRef.current && messages) {
             messageEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages]);
+
+    // No user selected yet
+    if (!selectedUser) {
+        return (
+            <div className="flex-1 flex items-center justify-center text-gray-500">
+                Select a contact to start chatting
+            </div>
+        );
+    }
 
     if (isMessagesLoading) {
         return (
@@ -42,6 +54,9 @@ const ChatContainer = () => {
             </div>
         );
     }
+
+
+
 
     return (
         <div className="flex-1 flex flex-col overflow-auto">
