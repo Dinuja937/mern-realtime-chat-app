@@ -91,13 +91,12 @@ export const useAuthStore = create((set, get) => ({
                 userId: authUser._id,
             },
         });
-        socket.connect();
-
-        set({ socket: socket });
-
+        // Register listeners before connecting to avoid missing the initial emission
         socket.on("getOnlineUsers", (userIds) => {
             set({ onlineUsers: userIds });
         });
+        socket.connect();
+        set({ socket });
     },
     disconnectSocket: () => {
         if (get().socket?.connected) get().socket.disconnect();
