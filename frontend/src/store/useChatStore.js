@@ -37,9 +37,15 @@ export const useChatStore = create((set, get) => ({
         const { selectedUser, messages } = get();
         try {
             const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-            set({ messages: [...messages, res.data] });
+            // Ensure we have a proper response before updating state
+            if (res && res.data) {
+                set({ messages: [...messages, res.data] });
+            } else {
+                toast.error('Message sent but server response was unexpected');
+            }
         } catch (error) {
-            toast.error(error.response.data.message);
+            const errMsg = error?.response?.data?.message || error?.response?.data?.error || error.message || 'Failed to send message';
+            toast.error(errMsg);
         }
     },
 
@@ -47,15 +53,21 @@ export const useChatStore = create((set, get) => ({
         const { selectedUser } = get();
         if (!selectedUser) return;
 
-        const socket = useAuthStore.getState().socket;
+        // Get socket and authenticated user from auth store
+        const { socket, authUser } = useAuthStore.getState();
 
         socket.on("newMessage", (newMessage) => {
-            const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-            if (!isMessageSentFromSelectedUser) return;
+            // Only handle messages that belong to the currently opened conversation
+            const isRelevant =
+                (newMessage.senderId === selectedUser._id && newMessage.receiverId === authUser?._id) ||
+                (newMessage.senderId === authUser?._id && newMessage.receiverId === selectedUser._id);
+            if (!isRelevant) return;
 
-            set({
-                messages: [...get().messages, newMessage],
-            });
+            // Prevent duplicate messages
+            const exists = get().messages.some((msg) => msg._id === newMessage._id);
+            if (exists) return;
+
+            set({ messages: [...get().messages, newMessage] });
         });
     },
 
